@@ -4,6 +4,7 @@ library(chirps)
 library(dplyr)
 library(ggplot2)
 library(shinycssloaders)
+library(DT)
 
 # Define UI for the Shiny app
 ui <- fluidPage(
@@ -31,7 +32,7 @@ ui <- fluidPage(
       br(),
       conditionalPanel(
         condition = "input.viewOption == 'Table'",
-        tableOutput("rainfallTable") %>% withSpinner(color = "#0dc5c1")
+        DTOutput("rainfallTable") %>% withSpinner(color = "#0dc5c1")
       ),
       conditionalPanel(
         condition = "input.viewOption == 'Line Chart'",
@@ -98,7 +99,12 @@ server <- function(input, output, session) {
       # Rename 'chirps' column to 'rainfall' and clean data
       rainfall_df <- rainfall_df %>%
         rename(rainfall = chirps) %>%
-        filter(!is.na(rainfall))
+        filter(!is.na(rainfall)) %>%
+        mutate(id = row_number())  # Add serial number ID starting from 1
+      
+      # Reorder columns for better display
+      rainfall_df <- rainfall_df %>%
+        select(id, lon, lat, date, rainfall)
       
       output$statusOutput <- renderText("Data successfully fetched.")
       return(rainfall_df)
@@ -108,11 +114,11 @@ server <- function(input, output, session) {
     })
   })
   
-  # Display rainfall data in the table
-  output$rainfallTable <- renderTable({
+  # Display rainfall data in an interactive table with pagination
+  output$rainfallTable <- renderDT({
     data <- rainfall_data()
     req(data)
-    data
+    datatable(data, options = list(pageLength = 10, autoWidth = TRUE))
   })
   
   # Render line plot of rainfall data
