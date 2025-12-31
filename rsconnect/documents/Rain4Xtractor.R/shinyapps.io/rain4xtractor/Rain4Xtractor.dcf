@@ -1,0 +1,13 @@
+name: Rain4Xtractor
+title: Rain4Xtractor
+username: rain4xtractor
+account: rain4xtractor
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 13951992
+bundleId: 9774426
+url: https://rain4xtractor.shinyapps.io/Rain4Xtractor/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: .RData|AgastyaCC.Rmd|app.R|App2.R|App3.R|App4.R|App5_beta.R|App6_beta.R|App7_beta.R|App8_beta.R|dodoma_rainfall_data_2024-10-12.csv|fixingcc.R|MineCC.Rmd|profile_Bobo_Dioulasso_from_2021-01-01_to_2021-12-31.csv|profile_Mwanza_from_2021-01-01_to_2021-12-31.csv|zero_profile_Mwanza_from_2021-01-01_to_2021-12-31.csv
