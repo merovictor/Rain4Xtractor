@@ -5,7 +5,7 @@ account: rain4xtractor
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 13951992
-bundleId: 11386981
+bundleId: 11387054
 url: https://rain4xtractor.shinyapps.io/Rain4Xtractor/
 version: 1
 asMultiple: FALSE

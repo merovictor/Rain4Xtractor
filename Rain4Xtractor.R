@@ -76,7 +76,7 @@ ui <- fluidPage(
         ),
         div(
           class = "app-footer",
-          "Victor Mero · v1.0"
+          HTML(paste0("© ", format(Sys.Date(), "%Y"), " Victor Mero · Rain4Xtractor v1.0"))
         )
       )
     ),
