@@ -16,94 +16,146 @@ library(lubridate)
 #####################
 # Define UI for the Shiny app
 ui <- fluidPage(
-  titlePanel("Rainfall Data Extractor and Profile Generator using CHIRPS"),
+  # Include custom CSS
+  tags$head(
+    tags$link(rel = "stylesheet", type = "text/css", href = "styles.css"),
+    tags$meta(name = "viewport", content = "width=device-width, initial-scale=1")
+  ),
+
+  # App Header
+  div(
+    class = "app-header",
+    h1(class = "app-title", "Rain4Xtractor"),
+    p(class = "app-subtitle", "CHIRPS Rainfall Data Extraction & GAM Profile Generation")
+  ),
+
+  # Tab Navigation
   tabsetPanel(
+    id = "mainTabs",
+    type = "tabs",
+
+    # Documentation Tab
     tabPanel(
-      "How to Use",
-      column(
-        width = 10, offset = 1,
-        br(),
-        h2("Welcome to Rain4Xtractor"),
-        p("This application allows you to extract high-resolution CHIRPS rainfall data and generate predictive profiles using GAM modeling."),
-        hr(),
-        h3("1. Rainfall Data Extraction"),
-        tags$ul(
-          tags$li(strong("Select Location:"), " Click anywhere on the map in the 'Rainfall Data Extraction' tab to set the coordinates."),
-          tags$li(strong("Set Date Range:"), " Select your desired Start and End dates in the sidebar."),
-          tags$li(strong("Get Data:"), " Click the 'Get Rainfall Data' button. The app will fetch data from CHIRPS servers."),
-          tags$li(strong("View & Download:"), " Switch between Table, Line Chart, and Bar Chart. Use 'Download CSV' to save the raw data.")
+      "Documentation",
+      div(
+        class = "doc-panel",
+        h2(class = "doc-title", "Overview"),
+        p(
+          class = "doc-intro",
+          "Extract high-resolution CHIRPS rainfall data for any global location and generate
+           smoothed temporal profiles using Generalized Additive Models (GAM)."
         ),
-        h3("2. Rainfall Profile Generator"),
-        tags$ul(
-          tags$li(strong("Prerequisite:"), " You must fetch extraction data first."),
-          tags$li(strong("Adjust Spline (k):"), " Control the smoothness of the profile. Higher 'k' captures more local variation."),
-          tags$li(strong("Scaling Factor:"), " Adjust the magnitude of the predicted rainfall profile."),
-          tags$li(strong("Generate Profile:"), " Click 'Generate Rainfall Profile' to fit the GAM model and see predicted values (red dashed line)."),
-          tags$li(strong("Download Profile:"), " Export the predicted values as a CSV for external use.")
+        div(
+          class = "doc-section",
+          h3(
+            class = "doc-section-title",
+            span(class = "badge", "1"),
+            "Data Extraction"
+          ),
+          tags$ul(
+            class = "doc-list",
+            tags$li(tags$strong("Location:"), " Click the map to set coordinates"),
+            tags$li(tags$strong("Date Range:"), " Define the temporal extent"),
+            tags$li(tags$strong("Fetch:"), " Retrieve daily precipitation from CHIRPS servers"),
+            tags$li(tags$strong("Export:"), " Download raw data as CSV")
+          )
         ),
-        br(),
-        hr(),
-        p(em("Developed by Victor Mero. Version 1.0"))
+        div(
+          class = "doc-section",
+          h3(
+            class = "doc-section-title",
+            span(class = "badge", "2"),
+            "Profile Generation"
+          ),
+          tags$ul(
+            class = "doc-list",
+            tags$li(tags$strong("Spline Complexity (k):"), " Basis dimension controlling smoothness. Higher values capture finer temporal variation"),
+            tags$li(tags$strong("Scaling Factor:"), " Multiplicative adjustment to predicted values"),
+            tags$li(tags$strong("Output:"), " GAM-fitted profile with observed vs. predicted comparison")
+          )
+        ),
+        div(
+          class = "app-footer",
+          "Victor Mero · v1.0"
+        )
       )
     ),
+
+    # Data Extraction Tab
     tabPanel(
-      "Rainfall Data Extraction",
+      "Data Extraction",
       fluidRow(
         column(
           width = 3,
           wellPanel(
+            div(class = "section-header", "Location & Period"),
             dateInput("startDate", "Start Date", value = "2021-01-01"),
             dateInput("endDate", "End Date", value = "2021-12-31"),
-            actionButton("getData", "Get Rainfall Data"),
-            br(),
-            radioButtons("viewOption", "View Data as:", choices = c("Table", "Line Chart", "Bar Chart"), selected = "Table"),
+            actionButton("getData", "Fetch Data", class = "btn-block mt-md"),
+            hr(),
+            div(class = "section-header", "Visualization"),
+            radioButtons("viewOption", NULL,
+              choices = c("Table", "Line Chart", "Bar Chart"),
+              selected = "Table"
+            ),
             downloadButton("downloadData", "Download CSV"),
-            br(),
-            verbatimTextOutput("statusOutput") # For status and debugging
+            verbatimTextOutput("statusOutput")
           )
         ),
         column(
           width = 9,
-          leafletOutput("map", height = 400) %>% withSpinner(color = "#0dc5c1"),
+          leafletOutput("map", height = 420) %>% withSpinner(color = "#4a6785"),
           br(),
           conditionalPanel(
             condition = "input.viewOption == 'Table'",
-            DTOutput("rainfallTable") %>% withSpinner(color = "#0dc5c1")
+            DTOutput("rainfallTable") %>% withSpinner(color = "#4a6785")
           ),
           conditionalPanel(
             condition = "input.viewOption == 'Line Chart'",
-            plotOutput("rainfallPlotLine") %>% withSpinner(color = "#0dc5c1")
+            plotOutput("rainfallPlotLine") %>% withSpinner(color = "#4a6785")
           ),
           conditionalPanel(
             condition = "input.viewOption == 'Bar Chart'",
-            plotOutput("rainfallPlotBar") %>% withSpinner(color = "#0dc5c1")
+            plotOutput("rainfallPlotBar") %>% withSpinner(color = "#4a6785")
           )
         )
       )
     ),
+
+    # Profile Generator Tab
     tabPanel(
-      "Rainfall Profile Generator",
+      "Profile Generator",
       fluidRow(
         column(
           width = 3,
           wellPanel(
-            sliderInput("splineK", "Spline Complexity (k):", min = 5, max = 50, value = 30, step = 1),
-            sliderInput("scalingFactor", "Scaling Factor Adjustment:", min = 0.5, max = 2, value = 1, step = 0.1),
-            actionButton("generateProfile", "Generate Rainfall Profile"),
+            div(class = "section-header", "Model Parameters"),
+            sliderInput("splineK", "Spline Complexity (k)",
+              min = 5, max = 50, value = 30, step = 1
+            ),
+            p(class = "helper-text", "Basis dimension for the GAM smooth term. Higher k permits more complex seasonal patterns."),
+            sliderInput("scalingFactor", "Scaling Factor",
+              min = 0.5, max = 2, value = 1, step = 0.1
+            ),
+            p(class = "helper-text", "Multiplier applied to predicted values for calibration."),
+            hr(),
+            actionButton("generateProfile", "Generate Profile", class = "btn-block"),
+            div(class = "mt-md"),
             downloadButton("downloadProfile", "Download Profile CSV"),
-            br(),
             verbatimTextOutput("profileStatusOutput")
           )
         ),
         column(
           width = 9,
-          plotOutput("rainfallProfilePlot") %>% withSpinner(color = "#0dc5c1"),
-          DTOutput("rainfallProfileTable") %>% withSpinner(color = "#0dc5c1")
+          plotOutput("rainfallProfilePlot") %>% withSpinner(color = "#4a6785"),
+          br(),
+          DTOutput("rainfallProfileTable") %>% withSpinner(color = "#4a6785")
         )
       )
     )
   )
 )
+
 
 # Define server logic
 server <- function(input, output, session) {
@@ -192,7 +244,7 @@ server <- function(input, output, session) {
     req(data)
 
     ggplot(data, aes(x = as.Date(date), y = rainfall)) +
-      geom_line(color = "#0dc5c1") +
+      geom_line(color = "#4a6785", linewidth = 0.8) +
       labs(title = "Rainfall Over Time", x = "Date", y = "Precipitation (mm)") +
       theme_minimal()
   })
@@ -203,7 +255,7 @@ server <- function(input, output, session) {
     req(data)
 
     ggplot(data, aes(x = as.Date(date), y = rainfall)) +
-      geom_bar(stat = "identity", fill = "#0dc5c1") +
+      geom_bar(stat = "identity", fill = "#4a6785", alpha = 0.85) +
       labs(title = "Rainfall Over Time", x = "Date", y = "Precipitation (mm)") +
       theme_minimal()
   })
@@ -254,10 +306,10 @@ server <- function(input, output, session) {
     req(profile_data)
 
     ggplot(profile_data, aes(x = date)) +
-      geom_line(aes(y = rainfall), color = "blue", size = 1, alpha = 0.7) +
-      geom_line(aes(y = gam_profile_scaled), color = "red", size = 1, linetype = "dashed") +
+      geom_line(aes(y = rainfall), color = "#4a6785", linewidth = 0.9, alpha = 0.8) +
+      geom_line(aes(y = gam_profile_scaled), color = "#c44536", linewidth = 1, linetype = "dashed") +
       labs(
-        title = "Observed Rainfall vs. Scaled GAM-Predicted Profile",
+        title = "Observed Rainfall vs. GAM-Predicted Profile",
         x = "Date",
         y = "Rainfall (mm)"
       ) +
