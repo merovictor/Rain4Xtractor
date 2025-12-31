@@ -1,6 +1,6 @@
 # Rain4Xtractor
 
-**Rain4Xtractor** is a professional R Shiny application designed to extract high-resolution rainfall data from the Climate Hazards Group InfraRed Precipitation with Station (CHIRPS) dataset and generate predictive rainfall profiles using Generalized Additive Models (GAM).
+**Rain4Xtractor** is a simple R Shiny application designed to extract high-resolution rainfall data from the Climate Hazards Group InfraRed Precipitation with Station (CHIRPS) dataset and generate predictive rainfall profiles using Generalized Additive Models (GAM).
 
 This tool is specifically useful for hydrologists, agricultural scientists, and climate researchers who need precise local rainfall data for analysis and modeling.
 
